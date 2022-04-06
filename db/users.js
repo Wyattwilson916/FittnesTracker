@@ -1,14 +1,18 @@
-const { use } = require("bcrypt/promises");
 const client = require("./client")
+const bcrypt = require("bcrypt")
 
 async function createUser({ username, password }){
     //hash password before storing to DB
+    
     try {
+        const SALT_COUNT = 10;
+        const hashedPassword = await bcrypt.hash(password, SALT_COUNT);
+
         const { rows: [user] } = await client.query(`
             INSERT INTO users (username, password)
             VALUES ($1, $2)
             RETURNING *;
-        `, [username, password]);
+        `, [username, hashedPassword]);
         delete user.password
         return user
     } catch (error) {
@@ -18,16 +22,23 @@ async function createUser({ username, password }){
 
 async function getUser({ username, password }) {
     try {
-        const { rows: [user] } = await client.query(`
-            SELECT *
-            FROM users
-            WHERE username = $1
-            AND password = $2;
-        `,[username, password]);
-        delete user.password
-        return user
+        const user = await getUserByUsername(username);
+        const hashedPassword = user.password;
+        const passwordsMatch = await bcrypt.compare(password, hashedPassword);
+        if (passwordsMatch) {
+            const { rows: [user] } = await client.query(`
+                SELECT *
+                FROM users
+                WHERE username = $1
+                AND password = $2;
+            `,[username, hashedPassword]);
+            delete user.password
+            return user
+        } else {
+            throw new Error('Passwords did not match...');
+        }  
     } catch (error) {
-        console.error('Problem getting user...')
+        console.error('Problem getting user...', error)
         
     }
 }
