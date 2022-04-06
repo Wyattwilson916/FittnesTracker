@@ -26,16 +26,24 @@ async function getAllActivities(){
 }
 
 async function updateActivity({id, name, description}){
+    const fields = {name, description}
+    const setString = Object.keys(fields)
+    .map((key, index) => `"${key}"=$${index + 1}`)
+    .join(", ");
+
+  if (setString.length === 0) {
+    return;
+  }
     try {
         const { rows: [activity] } = await client.query(`
             UPDATE activities
-            SET 
-            WHERE id=$1
-        `)
-        //!@#$%^&*()(*&^%$#@#$%^&*&^%$#@!@#$%^)#$%^&^%$#$%^&^%$#%^%$#$%
-        //FINISH THIS
+            SET ${setString}
+            WHERE id=${id}
+            RETURNING *;
+        `, Object.values(fields));
+        return activity
     } catch (error) {
-        
+        console.error('Problem updating activities', error)
     }
 }
 
@@ -44,4 +52,5 @@ async function updateActivity({id, name, description}){
 module.exports = {
     createActivity,
     getAllActivities,
+    updateActivity,
 }
