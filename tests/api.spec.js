@@ -30,7 +30,7 @@ describe('API', () => {
     expect(typeof res.data.message).toEqual('string');
   });
 
-  describe('Users', () => {
+  xdescribe('Users', () => {
     let newUser = { username: 'robert', password: 'bobbylong321' };
     let newUserShortPassword = { username: 'robertShort', password: 'bobby21' };
     describe('POST /users/register', () => {
@@ -41,7 +41,6 @@ describe('API', () => {
         try {
           tooShortSuccess = await axios.post(`${API_URL}/api/users/register`, newUserShortPassword);
         } catch(err) {
-          console.log(err, "!!!!!!!!!!")
           tooShortResponse = err.response;
         }
       })
@@ -72,7 +71,6 @@ describe('API', () => {
         expect(duplicateErrResp.data).toBeTruthy();
       });
       it('Throws errors for password-too-short.', async () => {
-        console.log(tooShortSuccess,"!@#$%^&*&^%$#@")
         expect(tooShortSuccess).toBeFalsy();
         expect(tooShortResponse.data).toBeTruthy();
         // expect(true).toBeTruthy();
@@ -90,7 +88,7 @@ describe('API', () => {
         expect(parsedToken.username).toEqual(registeredUser.username);
       });
     })
-    xdescribe('GET /users/me', () => {
+    describe('GET /users/me', () => {
       it('sends back users data if valid token is supplied in header', async () => {
         const {data} = await axios.get(`${API_URL}/api/users/me`, {
           headers: {'Authorization': `Bearer ${token}`}
@@ -109,7 +107,7 @@ describe('API', () => {
         expect(noTokenErrResp.data).toBeTruthy();
       });
     });
-    xdescribe('GET /users/:username/routines', () => {
+    describe('GET /users/:username/routines', () => {
       it('Gets a list of public routines for a particular user.', async () => {
         const userId = 2;
         const userWithRoutines = await getUserById(userId);
@@ -120,7 +118,7 @@ describe('API', () => {
       });
     });
   });
-  xdescribe('Activities', () => {
+  describe('Activities', () => {
     let activityToCreateAndUpdate = { name: 'Bicep Curls', description: 'They hurt, but you will thank you later' };
     describe('GET /activities', () => {
       it('Just returns a list of all activities in the database', async () => {
@@ -136,7 +134,7 @@ describe('API', () => {
         expect(filteredActivity.description).toEqual(curls.description);
       });
     });
-    xdescribe('POST /activities (*)', () => {
+    describe('POST /activities (*)', () => {
       it('Creates a new activity', async () => {
         const {data: respondedActivity} = await axios.post(`${API_URL}/api/activities`, activityToCreateAndUpdate, { headers: {'Authorization': `Bearer ${token}`} });
         expect(respondedActivity.name).toEqual(activityToCreateAndUpdate.name);

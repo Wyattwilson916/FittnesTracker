@@ -5,35 +5,28 @@ const {
   getUserByUsername,
   getUser,
   getUserById,
+  getPublicRoutinesByUser,
 } = require("../db");
 const jwt = require("jsonwebtoken");
 const { requireUser } = require("./utils");
 
-require("dotenv").config();
-
 usersRouter.post("/register", async (req, res, next) => {
   const { username, password } = req.body;
-  // FIX THE ERROR HANDLER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  console.log(req.body, "@#$%^&*")
+
   try {
-    // check if username taken
-    let _user = await getUserByUsername(username);
-    if (_user) {
-      res.status(401);
-      next({
-        name: 'UserExistsError',
-        message: 'A user by that username already exists'
-      })
-    } else if (password.length < 8) {
-          res.status(401)
-          next({response:"password-too-short", message:"Password too short"})
-          // throw error
+    // check password length
+    if (password.length >= 8) {
+      let _user = await getUserByUsername(username);
+      // check if username taken
+      if (!_user) {
+        const user = await createUser({ username, password });
+        res.send({ user });
+      } else {
+        next({ name: "UsernameTaken", message: "Username already exists" });
+      }
     } else {
-      // create new user
-      const user = await createUser({ username, password });
-      res.send({ user });
+      next({ name: "PasswordTooShort", message: "Password too short" });
     }
-    next("Username already exists", );
   } catch (error) {
     next(error);
   }
@@ -63,8 +56,17 @@ usersRouter.post("/login", async (req, res, next) => {
 usersRouter.get("/me", requireUser, async (req, res, next) => {
   try {
     const user = await getUserById(req.user.id);
-    // res.send(user);
-    console.log("Sent user data!!!")
+    res.send(user);
+  } catch (error) {
+    next(error);
+  }
+});
+
+usersRouter.get("/:username/routines", async (req, res, next) => {
+  const { username } = req.params;
+  try {
+    const routines = await getPublicRoutinesByUser({ username });
+    res.send(routines);
   } catch (error) {
     next(error);
   }
