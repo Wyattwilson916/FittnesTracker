@@ -91,47 +91,48 @@ async function getAllRoutines() {
   }
 }
 
-
-
 async function getAllPublicRoutines() {
-    const routines = await getAllRoutines();
-    const publicRoutines = routines.filter((routine) => {
-        return routine.isPublic;
-    });
-    
-    return publicRoutines;
+  const routines = await getAllRoutines();
+  const publicRoutines = routines.filter((routine) => {
+    return routine.isPublic;
+  });
+
+  return publicRoutines;
 }
 
 async function getAllRoutinesByUser({ username }) {
-    const routines = await getAllRoutines();
-    const userRoutines = routines.filter((routine) => {
-        return routine.creatorName === username;
-    });
-    
-    return userRoutines;
+  const routines = await getAllRoutines();
+  const userRoutines = routines.filter((routine) => {
+    return routine.creatorName === username;
+  });
+
+  return userRoutines;
 }
 
 async function getPublicRoutinesByUser({ username }) {
-    const userRoutines = await getAllRoutinesByUser({ username });
-    const publicRoutines = userRoutines.filter((routine) => {
-        return routine.isPublic;
-    });
-    
-    return publicRoutines;
+  const userRoutines = await getAllRoutinesByUser({ username });
+  const publicRoutines = userRoutines.filter((routine) => {
+    return routine.isPublic;
+  });
+
+  return publicRoutines;
 }
 
 async function getPublicRoutinesByActivity({ id }) {
-    const routines = await getAllPublicRoutines();
-    const activityRoutines = routines.filter((routine) => {
-        for (let activity of routine.activities) {
-            return activity.activityId === id;
-        }
-    });
-    
-    return activityRoutines;
+  const routines = await getAllPublicRoutines();
+  const activityRoutines = routines.filter((routine) => {
+    for (let activity of routine.activities) {
+      return activity.activityId === id;
+    }
+  });
+
+  return activityRoutines;
 }
 
 async function createRoutine({ creatorId, isPublic, name, goal }) {
+  if (typeof isPublic !== "boolean") {
+    isPublic = false;
+  }
   try {
     const {
       rows: [routine],
@@ -149,13 +150,13 @@ async function createRoutine({ creatorId, isPublic, name, goal }) {
   }
 }
 
-async function updateRoutine({id, isPublic, name, goal}) {
-    const fields = { isPublic, name, goal };
-    
-    if (typeof fields.isPublic !== "boolean"){
-        delete fields.isPublic
-    }
-    const setString = Object.keys(fields)
+async function updateRoutine({ id, isPublic, name, goal }) {
+  const fields = { isPublic, name, goal };
+
+  if (typeof fields.isPublic !== "boolean") {
+    delete fields.isPublic;
+  }
+  const setString = Object.keys(fields)
     .map((key, index) => `"${key}"=$${index + 1}`)
     .join(", ");
 
@@ -163,30 +164,41 @@ async function updateRoutine({id, isPublic, name, goal}) {
     return;
   }
   try {
-    const { rows: [routine] } = await client.query(`
+    const {
+      rows: [routine],
+    } = await client.query(
+      `
         UPDATE routines
         SET ${setString}
         WHERE id=${id}
         RETURNING *;
-        `, Object.values(fields));
+        `,
+      Object.values(fields)
+    );
     return routine;
   } catch (error) {
     console.error("Problem updating routine", error);
   }
 }
 
-async function destroyRoutine(id){
-    try {
-        await client.query(`
-          DELETE FROM routine_activities
-          WHERE "routineId"=${id};
+async function destroyRoutine(id) {
+  try {
+    await client.query(`
+      DELETE FROM routine_activities
+      WHERE "routineId"=${id};
+    `);
+    const {
+      rows: [routine],
+    } = await client.query(`
           DELETE FROM routines
-          WHERE id=${id};
+          WHERE id=${id}
+          RETURNING *;
         `);
-        console.log('Finished deleting routine!')
-    } catch (error) {
-        console.error('Problem deleting routine...', error)
-    }
+    console.log(routine, "Finished deleting routine!");
+    return routine;
+  } catch (error) {
+    console.error("Problem deleting routine...", error);
+  }
 }
 
 module.exports = {
@@ -199,5 +211,5 @@ module.exports = {
   getPublicRoutinesByUser,
   getPublicRoutinesByActivity,
   updateRoutine,
-  destroyRoutine
+  destroyRoutine,
 };
