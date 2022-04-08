@@ -130,6 +130,9 @@ async function getPublicRoutinesByActivity({ id }) {
 }
 
 async function createRoutine({ creatorId, isPublic, name, goal }) {
+  if (typeof isPublic !== "boolean") {
+    isPublic = false;
+  }
   try {
     const {
       rows: [routine],
@@ -183,7 +186,7 @@ async function destroyRoutine(id) {
     await client.query(`
       DELETE FROM routine_activities
       WHERE "routineId"=${id};
-    `)
+    `);
     const {
       rows: [routine],
     } = await client.query(`

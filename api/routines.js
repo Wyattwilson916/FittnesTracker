@@ -7,6 +7,9 @@ const {
   getRoutineById,
   destroyRoutine,
   addActivityToRoutine,
+  getRoutineActivitiesByRoutine,
+  attachActivitiesToRoutines,
+  getRoutineActivityByRoutineAndActivity,
 } = require("../db");
 const { requireUser } = require("./utils");
 
@@ -22,7 +25,7 @@ routinesRouter.get("/", async (req, res, next) => {
 routinesRouter.post("/", requireUser, async (req, res, next) => {
   const { isPublic, name, goal } = req.body;
   const { id } = req.user;
-  const routineObject = { creatorId: id, isPublic, name, goal };
+  const routineObject = { creatorId: id, isPublic: isPublic, name, goal };
   try {
     const routine = await createRoutine(routineObject);
     res.send(routine);
@@ -71,13 +74,21 @@ routinesRouter.delete("/:routineId", requireUser, async (req, res, next) => {
   }
 });
 
-routinesRouter.post(
-  "/:routineId/activities",
-  requireUser,
-  async (req, res, next) => {
-    const { routineId } = req.params;
-    const { activityId, count, duration } = req.body;
-    try {
+routinesRouter.post("/:routineId/activities", async (req, res, next) => {
+  const { routineId } = req.params;
+  const { activityId, count, duration } = req.body;
+  try {
+    const routineActivitiesArray = await getRoutineActivitiesByRoutine({
+      id: routineId,
+    });
+    const filteredRoutineActivities = routineActivitiesArray.filter((RA) => {
+      return RA.activityId === activityId;
+    });
+    const checkRA = await getRoutineActivityByRoutineAndActivity(
+      routineId,
+      activityId
+    );
+    if (!checkRA && filteredRoutineActivities.length === 0) {
       const routineActivity = await addActivityToRoutine({
         routineId,
         activityId,
@@ -85,10 +96,10 @@ routinesRouter.post(
         duration,
       });
       res.send(routineActivity);
-    } catch (error) {
-      next(error);
     }
+  } catch (error) {
+    next(error);
   }
-);
+});
 
 module.exports = routinesRouter;
