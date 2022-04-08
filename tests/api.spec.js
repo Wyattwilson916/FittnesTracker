@@ -30,7 +30,7 @@ describe('API', () => {
     expect(typeof res.data.message).toEqual('string');
   });
 
-  xdescribe('Users', () => {
+  describe('Users', () => {
     let newUser = { username: 'robert', password: 'bobbylong321' };
     let newUserShortPassword = { username: 'robertShort', password: 'bobby21' };
     describe('POST /users/register', () => {
@@ -160,7 +160,7 @@ describe('API', () => {
       });
     });
   });
-  xdescribe('Routines', () => {
+  describe('Routines', () => {
     let routineToCreateAndUpdate = {isPublic: true, name: 'Elliptical Day', goal: 'Work on that Elliptical!'};
     let routineToFail = {isPublic: false, name: 'Elliptical Day 2', goal: 'Work on that Elliptical... again!'};
     const newRoutineData = {isPublic: false, name: 'Elliptical Day Private', goal: 'Work on that Elliptical, yet again!'}
