@@ -64,6 +64,15 @@ async function updateRoutineActivity({ id, count, duration }) {
   }
 }
 
+async function canEditRoutineActivity(routineActivityId, userId) {
+    const {rows: [routineFromRoutineActivity]} = await client.query(`
+        SELECT * FROM routine_activities
+        JOIN routines ON routine_activities."routineId" = routines.id
+        AND routine_activities.id = $1
+      `, [routineActivityId]);
+      return routineFromRoutineActivity.creatorId === userId;
+  }
+
 async function destroyRoutineActivity(id) {
   try {
     const {
@@ -121,4 +130,5 @@ module.exports = {
   destroyRoutineActivity,
   getRoutineActivitiesByRoutine,
   getRoutineActivityByRoutineAndActivity,
+  canEditRoutineActivity,
 };

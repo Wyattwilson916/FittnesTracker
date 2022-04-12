@@ -84,6 +84,7 @@ routinesRouter.post("/:routineId/activities", async (req, res, next) => {
     const filteredRoutineActivities = routineActivitiesArray.filter((RA) => {
       return RA.activityId === activityId;
     });
+    console.log(filteredRoutineActivities, "FILTERED");
     const checkRA = await getRoutineActivityByRoutineAndActivity(
       routineId,
       activityId
@@ -95,7 +96,14 @@ routinesRouter.post("/:routineId/activities", async (req, res, next) => {
         count,
         duration,
       });
-      res.send(routineActivity);
+      if (routineActivity) {
+        res.send(routineActivity);
+      }
+    } else {
+      next({
+        name: "RoutineActivityExistsError",
+        message: `A routine_activity by that routineId ${routineId}, activityId ${activityId} combination already exists`,
+      });
     }
   } catch (error) {
     next(error);
