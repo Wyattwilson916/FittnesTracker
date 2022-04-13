@@ -1,5 +1,6 @@
 const client = require("./client");
 
+// returns routine object based on id
 async function getRoutineById(id) {
   try {
     const {
@@ -14,6 +15,7 @@ async function getRoutineById(id) {
   }
 }
 
+// returns routine object without connected activites
 async function getRoutinesWithoutActivities() {
   try {
     const { rows: routines } = await client.query(`
@@ -26,6 +28,7 @@ async function getRoutinesWithoutActivities() {
   }
 }
 
+// helper function for following function, creates an array optimized routine objects
 function mapOverRoutines(routines) {
   const map = {};
 
@@ -62,6 +65,7 @@ function mapOverRoutines(routines) {
   return Object.values(map);
 }
 
+// returns array of all routine objects with activities key, and attached array of activity objects
 async function getAllRoutines() {
   try {
     const { rows } = await client.query(`
@@ -91,6 +95,7 @@ async function getAllRoutines() {
   }
 }
 
+// filters array of optimized routine objects to return ones set to public
 async function getAllPublicRoutines() {
   const routines = await getAllRoutines();
   const publicRoutines = routines.filter((routine) => {
@@ -100,6 +105,7 @@ async function getAllPublicRoutines() {
   return publicRoutines;
 }
 
+// filters array of optimized routine objects by username
 async function getAllRoutinesByUser({ username }) {
   const routines = await getAllRoutines();
   const userRoutines = routines.filter((routine) => {
@@ -109,6 +115,7 @@ async function getAllRoutinesByUser({ username }) {
   return userRoutines;
 }
 
+// filters array of optimized objects by username and public status
 async function getPublicRoutinesByUser({ username }) {
   const userRoutines = await getAllRoutinesByUser({ username });
   const publicRoutines = userRoutines.filter((routine) => {
@@ -118,6 +125,7 @@ async function getPublicRoutinesByUser({ username }) {
   return publicRoutines;
 }
 
+// filters array of public optimized routines by attached activity id
 async function getPublicRoutinesByActivity({ id }) {
   const routines = await getAllPublicRoutines();
   const activityRoutines = routines.filter((routine) => {
@@ -129,6 +137,7 @@ async function getPublicRoutinesByActivity({ id }) {
   return activityRoutines;
 }
 
+// creates a new row in routines table and returns unoptimized routine object
 async function createRoutine({ creatorId, isPublic, name, goal }) {
   if (typeof isPublic !== "boolean") {
     isPublic = false;
@@ -150,6 +159,7 @@ async function createRoutine({ creatorId, isPublic, name, goal }) {
   }
 }
 
+// updates row in routines table and returns unoptimized routine object
 async function updateRoutine({ id, isPublic, name, goal }) {
   const fields = { isPublic, name, goal };
 
@@ -181,6 +191,7 @@ async function updateRoutine({ id, isPublic, name, goal }) {
   }
 }
 
+// deletes row from routines table and associated rows from routine_activities table, and returns deleted routine object
 async function destroyRoutine(id) {
   try {
     await client.query(`

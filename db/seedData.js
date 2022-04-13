@@ -2,6 +2,7 @@
 const { createUser, createActivity, createRoutine, getRoutinesWithoutActivities, getAllActivities, addActivityToRoutine } = require('./');
 const client = require("./client");
 
+// used in rebuildDB, drops existing tables to be recreated later
 async function dropTables() {
   console.log("Dropping All Tables...");
   try {
@@ -17,6 +18,7 @@ async function dropTables() {
   }
 }
 
+// used in rebuildDB, creates tables needed for database
 async function createTables() {
   console.log("Starting to build tables...");
   try {

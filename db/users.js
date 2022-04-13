@@ -1,6 +1,7 @@
 const client = require("./client")
 const bcrypt = require("bcrypt")
 
+// used to add a new user with hashed password to database
 async function createUser({ username, password }){
     //hash password before storing to DB
     
@@ -20,6 +21,7 @@ async function createUser({ username, password }){
     }
 }
 
+// verifies existing user and compares password to hashed password
 async function getUser({ username, password }) {
     try {
         const user = await getUserByUsername(username);
@@ -43,6 +45,7 @@ async function getUser({ username, password }) {
     }
 }
 
+// used as helper function when user object needed
 async function getUserById(id){
     try {
         const { rows: [user] } = await client.query(`
@@ -56,6 +59,7 @@ async function getUserById(id){
     }
 }
 
+// used as helper function when user object needed
 async function getUserByUsername(username){
     try {
         const { rows: [user] } = await client.query(`

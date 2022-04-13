@@ -1,3 +1,4 @@
+// acts as middleware to require a req.user, i.e. someone needs to be logged in
 function requireUser(req, res, next) {
     if (!req.user) {
       next({

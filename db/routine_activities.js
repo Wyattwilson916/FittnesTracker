@@ -1,5 +1,6 @@
 const client = require("./client");
 
+// // used as helper function when routineActivity object needed
 async function getRoutineActivityById(id) {
   try {
     const {
@@ -14,6 +15,7 @@ async function getRoutineActivityById(id) {
   }
 }
 
+// creates link between existing routine and activity by adding to through table
 async function addActivityToRoutine({
   routineId,
   activityId,
@@ -37,6 +39,7 @@ async function addActivityToRoutine({
   }
 }
 
+// used to update count and/or duration of routineActivity
 async function updateRoutineActivity({ id, count, duration }) {
   const fields = { count, duration };
   const setString = Object.keys(fields)
@@ -64,6 +67,7 @@ async function updateRoutineActivity({ id, count, duration }) {
   }
 }
 
+// used to verify whether the user trying to edit routineActivity is the author of routine
 async function canEditRoutineActivity(routineActivityId, userId) {
     const {rows: [routineFromRoutineActivity]} = await client.query(`
         SELECT * FROM routine_activities
@@ -73,6 +77,7 @@ async function canEditRoutineActivity(routineActivityId, userId) {
       return routineFromRoutineActivity.creatorId === userId;
   }
 
+// deletes routineActivity, severing the connection between routine and activity
 async function destroyRoutineActivity(id) {
   try {
     const {
@@ -89,6 +94,7 @@ async function destroyRoutineActivity(id) {
   }
 }
 
+// returns an array of RAs based on routine id
 async function getRoutineActivitiesByRoutine({ id }) {
   try {
     const { rows: routine_activites } = await client.query(`
@@ -101,6 +107,7 @@ async function getRoutineActivitiesByRoutine({ id }) {
   }
 }
 
+// returns an RA object based on routine id and activity id
 async function getRoutineActivityByRoutineAndActivity(routineId, activityId) {
   try {
     const {
@@ -115,13 +122,6 @@ async function getRoutineActivityByRoutineAndActivity(routineId, activityId) {
     throw error;
   }
 }
-
-// Test connect
-// client
-//   .connect()
-//   .then(() => getRoutineActivityByRoutineAndActivity(3, 7))
-//   .catch(console.error)
-//   .finally(() => client.end());
 
 module.exports = {
   getRoutineActivityById,

@@ -1,4 +1,5 @@
 const express = require("express");
+// establishes routes for routines
 const routinesRouter = express.Router();
 const {
   getAllPublicRoutines,
@@ -8,11 +9,11 @@ const {
   destroyRoutine,
   addActivityToRoutine,
   getRoutineActivitiesByRoutine,
-  attachActivitiesToRoutines,
   getRoutineActivityByRoutineAndActivity,
 } = require("../db");
 const { requireUser } = require("./utils");
 
+// gets all public routines
 routinesRouter.get("/", async (req, res, next) => {
   try {
     const routines = await getAllPublicRoutines();
@@ -22,9 +23,11 @@ routinesRouter.get("/", async (req, res, next) => {
   }
 });
 
+// creates and returns routine
 routinesRouter.post("/", requireUser, async (req, res, next) => {
   const { isPublic, name, goal } = req.body;
   const { id } = req.user;
+  // build update object using req.body and req.user
   const routineObject = { creatorId: id, isPublic: isPublic, name, goal };
   try {
     const routine = await createRoutine(routineObject);
@@ -34,10 +37,12 @@ routinesRouter.post("/", requireUser, async (req, res, next) => {
   }
 });
 
+// update route for specific routine, if user is author
 routinesRouter.patch("/:routineId", requireUser, async (req, res, next) => {
   const { name, goal } = req.body;
   const { id } = req.user;
   const { routineId } = req.params;
+  // builds update object if parameters are supplied
   const updateObject = {};
   updateObject.id = routineId;
   if (typeof req.body.isPublic === "boolean") {
@@ -51,8 +56,10 @@ routinesRouter.patch("/:routineId", requireUser, async (req, res, next) => {
     updateObject.goal = goal;
   }
   try {
+    // checks if routine exists and if user is the author of routine
     const checkRoutine = await getRoutineById(routineId);
     if (checkRoutine && checkRoutine.creatorId === id) {
+      // updates and returns routine
       const routine = await updateRoutine(updateObject);
       res.send(routine);
     }
@@ -61,11 +68,14 @@ routinesRouter.patch("/:routineId", requireUser, async (req, res, next) => {
   }
 });
 
+// deletes routine if user is the author of routine
 routinesRouter.delete("/:routineId", requireUser, async (req, res, next) => {
   const { routineId } = req.params;
   try {
+    // check if user is the routine's creator
     const checkRoutine = await getRoutineById(routineId);
     if (checkRoutine && checkRoutine.creatorId === req.user.id) {
+      // deletes routine and associated routineActivities
       const routine = await destroyRoutine(routineId);
       res.send(routine);
     }
@@ -74,22 +84,26 @@ routinesRouter.delete("/:routineId", requireUser, async (req, res, next) => {
   }
 });
 
+// adds activity to routine
 routinesRouter.post("/:routineId/activities", async (req, res, next) => {
   const { routineId } = req.params;
   const { activityId, count, duration } = req.body;
   try {
+    // get array of all routineActivities with common routine
     const routineActivitiesArray = await getRoutineActivitiesByRoutine({
       id: routineId,
     });
+    // filters array based on activityId, if new array has 0 length, routineActivity does not exist yet
     const filteredRoutineActivities = routineActivitiesArray.filter((RA) => {
       return RA.activityId === activityId;
     });
-    console.log(filteredRoutineActivities, "FILTERED");
+    // double check to make sure routineActivity with stated routineId and activityId does not exist
     const checkRA = await getRoutineActivityByRoutineAndActivity(
       routineId,
       activityId
     );
     if (!checkRA && filteredRoutineActivities.length === 0) {
+      // finally create routineActivity object, connecting activity to routine
       const routineActivity = await addActivityToRoutine({
         routineId,
         activityId,
@@ -97,6 +111,7 @@ routinesRouter.post("/:routineId/activities", async (req, res, next) => {
         duration,
       });
       if (routineActivity) {
+        // if it comes back correctly, send routineActivity object
         res.send(routineActivity);
       }
     } else {
