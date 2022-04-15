@@ -50,6 +50,7 @@ function mapOverRoutines(routines) {
           description: routine.description,
           duration: routine.duration,
           count: routine.count,
+          routineId: routine.routineId,
         });
       }
     } else {
@@ -59,6 +60,7 @@ function mapOverRoutines(routines) {
         description: routine.description,
         duration: routine.duration,
         count: routine.count,
+        routineId: routine.routineId,
       });
     }
   }
@@ -79,7 +81,8 @@ async function getAllRoutines() {
             activities.name AS "activityName",
             activities.description,
             routine_activities.duration,
-            routine_activities.count
+            routine_activities.count,
+            routine_activities."routineId"
         FROM users
         JOIN routines
         ON users.id = routines."creatorId"
